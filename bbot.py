@@ -69,9 +69,6 @@ class BBot:
         download img to folder given url
         """
 
-        # Send a GET request to the image URL
-        response = requests.get(image_url)
-
         parsed_url = urlparse(image_url)
         # Extract the file name from the path
         image_name = parsed_url.path.split('/')[-1]
@@ -81,6 +78,9 @@ class BBot:
         if os.path.exists(image_path):
             print("Image already exists, skipping download.")
             return
+
+        # Send a GET request to the image URL
+        response = requests.get(image_url)
 
         # Check if the request was successful
         if response.status_code == 200:
@@ -132,10 +132,13 @@ class BBot:
                     if "content" in content:
                         print(sender, ts_str, content["content"])
                         saved.append(("text",sender, ts_str, content["content"]))
-                    else:
+                    elif "url" in content:
                         print(sender, ts_str, content["url"])
                         self.download_img(content["url"], save_dir)
                         saved.append(("img",sender, ts_str, content["url"]))
+                    elif "bvid" in content:
+                        print(sender, ts_str, content["bvid"])
+                        saved.append(("bvid",sender, ts_str, content["bvid"]))
 
             print(f"{total_count} messages fetched")
             if int(data["has_more"]) == 0 :
@@ -177,6 +180,8 @@ class BBot:
 
             if content_type=="text":  
                 message_body+=f"{msg[3]}</p> \n"
+            if content_type=="bvid":
+                message_body+=f"https://www.bilibili.com/video/{msg[3]}/</p> \n"
         message=message_head+message_body+message_tail
         f.write(message)
         f.close()
